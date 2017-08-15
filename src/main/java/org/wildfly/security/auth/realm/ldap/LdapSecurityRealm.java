@@ -1033,10 +1033,10 @@ class LdapSecurityRealm implements ModifiableSecurityRealm, CacheableSecurityRea
             context = ctx;
             cookie = null;
             try {
-                result = searchWithPagination();
                 return StreamSupport.stream(new Spliterators.AbstractSpliterator<SearchResult>(Long.MAX_VALUE, Spliterator.NONNULL) {
 
                     boolean finished = false;
+                    boolean first = true;
                     Set<Object> followedReferrals = new HashSet<>();
 
                     @Override
@@ -1047,6 +1047,10 @@ class LdapSecurityRealm implements ModifiableSecurityRealm, CacheableSecurityRea
                         try {
                             while (true) {
                                 try {
+                                    if(first) {
+                                        result = searchWithPagination();
+                                        first = false;
+                                    }
                                     if ( ! result.hasMore()) { // end of page
                                         if ( ! (pageSize != 0 && context instanceof LdapContext) ) {
                                             log.trace("Identity iterating - pagination not supported - end of list");
@@ -1099,9 +1103,16 @@ class LdapSecurityRealm implements ModifiableSecurityRealm, CacheableSecurityRea
                             }
                         } catch (NamingException | IOException e) {
                             try {
-                                result.close();
+                                if(result != null) {
+                                    result.close();
+                                }
                             } catch (NamingException ex) {
                                 log.trace("Unable to close result", ex);
+                            }
+                            if(first && e instanceof NameNotFoundException) {
+                                log.trace("Error searching", e);
+                                //none elements
+                                return false;
                             }
                             throw log.ldapRealmErrorWhileConsumingResultsFromSearch(searchDn, filter, Arrays.toString(filterArgs), e);
                         }
@@ -1115,9 +1126,6 @@ class LdapSecurityRealm implements ModifiableSecurityRealm, CacheableSecurityRea
                         }
                     }
                 });
-            } catch (NameNotFoundException e) {
-                log.trace("Error searching", e);
-                return Stream.empty();
             } catch (Exception e) {
                 throw log.ldapRealmIdentitySearchFailed(e);
             }
