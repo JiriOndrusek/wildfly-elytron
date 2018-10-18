@@ -17,6 +17,7 @@ dung.keystore contains an alias 'dung'.
 firefly.keystore contains an alias 'firefly'.
 ladybird.keystore contains an alias 'ladybird'.
 scarab.keystore contains an alias 'scarab'.
+binary.keystore  contains an alias 'binary'.
 
 # crl
 

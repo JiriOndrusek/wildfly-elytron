@@ -65,11 +65,6 @@ public class X509EvidenceVerificationSuiteChild {
         testX509AuthInternal("scarab");
     }
 
-    @Test
-    public void testX509AuthBinary() throws Exception {
-        testX509AuthInternal("scarab_binary");
-    }
-
     private void testX509AuthInternal(String name) throws Exception {
         SecurityRealm securityRealm = LdapSecurityRealmBuilder.builder()
                 .setDirContextSupplier(LdapTestSuite.dirContextFactory.create())
